@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .header .date {
+            margin-top: 10px;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        .header .symbols {
+            margin-top: 10px;
+            opacity: 0.9;
+            font-size: 12px;
+        }
+        .content {
+            padding: 20px;
+        }
+        .stock-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        .stock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .stock-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .stock-change {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .stock-change.positive {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .stock-change.negative {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .stock-change.neutral {
+            background-color: #f5f5f5;
+            color: #616161;
+        }
+        .summary-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+        }
+        .summary-content h3 {
+            color: #333;
+            font-size: 14px;
+            margin-top: 15px;
+            margin-bottom: 8px;
+        }
+        .summary-content ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .summary-content li {
+            margin-bottom: 5px;
+        }
+        .news-links {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e0e0e0;
+        }
+        .news-links h4 {
+            font-size: 12px;
+            color: #666;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+        }
+        .news-links a {
+            display: block;
+            font-size: 12px;
+            color: #667eea;
+            text-decoration: none;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .news-links a:hover {
+            text-decoration: underline;
+        }
+        .footer {
+            background-color: #f5f5f5;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+        }
+        .no-news {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        @media only screen and (max-width: 480px) {
+            .container {
+                border-radius: 0;
+            }
+            .header {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+            .stock-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 每日股票简报</h1>
+            <div class="date">2026年02月27日（星期五）</div>
+            <div class="symbols">覆盖股票：AMD</div>
+        </div>
+
+        <div class="content">
+            
+                
+                <div class="stock-card">
+                    <div class="stock-header">
+                        <div class="stock-name">AMD
+                            
+                            <span style="font-size: 14px; color: #666; font-weight: normal;">（Advanced Micro Devices, Inc.）</span>
+                            
+                        </div>
+                        <div class="stock-change negative">
+                            -1.7%
+                        </div>
+                    </div>
+
+                    
+                    <div class="summary-content">
+                        <p>## AMD（AMD）</h3></p>
+<p><strong>重要事件</strong></p>
+<ul>
+<li>Meta与AMD签署超1000亿美元GPU芯片协议，AMD股价大涨。</li>
+<li>Meta同时与谷歌达成数十亿美元AI芯片交易，扩大供应商多元化。</li>
+<li>Avalon子公司加入AMD AI开发者计划，获资源支持。</li>
+</ul>
+<p><strong>市场情绪</strong></p>
+<p>**正面**。Meta巨额订单显著提振AMD市场地位，投资者看好其AI数据中心增长潜力。</p>
+<p>**需要关注**</p>
+<ul>
+<li>竞争对手Nvidia虽业绩强劲但股价滞涨，关注板块整体估值压力。</li>
+<li>市场对AI板块的担忧导致大盘波动，需警惕情绪回调。</li>
+</ul>
+                    </div>
+                    
+
+                    
+                    <div class="news-links">
+                        <h4>相关新闻 (20 条)</h4>
+                        
+                        <a href="https://finnhub.io/api/news?id=d991a50f29b1dc2b74df9a332a40bd8e106a2eb2414af0804484b89373f91ea1" target="_blank">Is AMD a Buy After Meta Deal?</a>
+                        
+                        <a href="https://finnhub.io/api/news?id=67fc4374f1f7e71daba6a955f276ad5a3b02368eacff86fffef205cb96b86a5e" target="_blank">Meta's Chip Dreams Face Hard Limits</a>
+                        
+                        <a href="https://finnhub.io/api/news?id=58056d365563957cb90a6828a7db48b3bdcd687f45f52022020e6682caecd518" target="_blank">Nvidia’s Earnings Can’t Buy a Rally, but Anthropic Just Threw Software a Lifeline</a>
+                        
+                        <a href="https://finnhub.io/api/news?id=82ff59f9608f1c927f3e7e41dac965bd2fe043d0d6bc6cc49b66739207dca16c" target="_blank">Software Stocks Are on a Hair Trigger. It’s Too Early to Call a Bottom.</a>
+                        
+                        <a href="https://finnhub.io/api/news?id=2879e5fce80c46cc76a57e16f9c37412ceac1e6afd9d9a9c2fc205a7692e280d" target="_blank">A Look At Credo Technology Group Holding’s (CRDO) Valuation After New TensorWave Partnership And Analyst Upgrades</a>
+                        
+                    </div>
+                    
+                </div>
+                
+            
+        </div>
+
+        <div class="footer">
+            <p>本简报由 AI 自动生成，仅供参考，不构成投资建议。</p>
+            <p style="margin-top: 8px;">2026-02-27 17:53:12</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -3,7 +3,7 @@ name: Daily Stock Digest
 on:
   schedule:
     # 北京时间每天早上 7:00 = UTC 23:00（前一天）
-    - cron: '0 23 * * *'
+    - cron: '0 11 * * *'
   workflow_dispatch:  # 允许手动触发
 
 jobs:

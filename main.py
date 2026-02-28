@@ -168,6 +168,7 @@ def run_digest(is_test: bool = False, test_symbol: str = None) -> Dict:
             summaries=summaries,
             stock_info=stock_info,
             news_data=news_data,
+            predictions=predictions if config.ENABLE_PREDICTION else None,
             language=config.REPORT_LANGUAGE
         )
         print("✓ HTML 报告构建完成")
@@ -177,8 +178,8 @@ def run_digest(is_test: bool = False, test_symbol: str = None) -> Dict:
 
     print()
 
-    # 步骤 5: 发送邮件
-    print("📧 步骤 5/5: 发送邮件...")
+    # 步骤 6: 发送邮件
+    print("📧 步骤 6/6: 发送邮件...")
 
     # 邮件主题
     if config.REPORT_LANGUAGE == "zh":

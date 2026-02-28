@@ -280,6 +280,7 @@ def build_html_report(
     summaries: Dict[str, str],
     stock_info: Dict[str, Dict],
     news_data: Dict[str, List[Dict]],
+    predictions: Dict[str, str] = None,
     language: str = "zh",
 ) -> str:
     """
@@ -289,6 +290,7 @@ def build_html_report(
         summaries: 股票摘要字典 {symbol: markdown_summary}
         stock_info: 股票信息字典 {symbol: {company_name, change, change_percent}}
         news_data: 新闻数据字典 {symbol: [news_list]}
+        predictions: AI 预测分析字典 {symbol: prediction_text} (可选)
         language: 报告语言
 
     Returns:

@@ -245,6 +245,20 @@ EMAIL_TEMPLATE = """
                     <div class="no-news">暂无新闻</div>
                     {% endif %}
 
+                    {% if stock.prediction %}
+                    <div class="prediction-box">
+                        <div class="prediction-title">
+                            🔮 AI 走势预测
+                            {% if stock.trend_badge %}
+                            <span class="trend-badge {{ stock.trend_class }}">{{ stock.trend_badge }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="prediction-content">
+                            {{ stock.prediction_html }}
+                        </div>
+                    </div>
+                    {% endif %}
+
                     {% if stock.news_links %}
                     <div class="news-links">
                         <h4>相关新闻 ({{ stock.news_count }} 条)</h4>

@@ -253,8 +253,20 @@ EMAIL_TEMPLATE = """
                             <span style="font-size: 14px; color: #666; font-weight: normal;">（{{ stock.company_name }}）</span>
                             {% endif %}
                         </div>
-                        <div class="stock-change {{ stock.change_class }}">
-                            {% if stock.change_percent > 0 %}+{% endif %}{{ stock.change_percent }}%
+                        <div class="stock-price-info">
+                            {% if stock.current_price %}
+                            <div class="stock-current-price">${{ stock.current_price }}</div>
+                            {% endif %}
+                            <div class="stock-change {{ stock.change_class }}">
+                                {% if stock.change_percent > 0 %}+{% endif %}{{ stock.change_percent }}%
+                            </div>
+                            {% if stock.week_8_low or stock.week_8_high %}
+                            <div class="stock-range-info">
+                                {% if stock.week_8_low %}8周低: <span class="range-low">${{ stock.week_8_low }}</span>{% endif %}
+                                {% if stock.week_8_low and stock.week_8_high %} | {% endif %}
+                                {% if stock.week_8_high %}8周高: <span class="range-high">${{ stock.week_8_high }}</span>{% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -455,8 +467,11 @@ def build_html_report(
         stocks.append({
             "symbol": symbol,
             "company_name": info.get("company_name", symbol),
+            "current_price": info.get("current_price"),
             "change_percent": info.get("change_percent", 0),
             "change_class": _get_change_class(info.get("change_percent", 0)),
+            "week_8_low": info.get("week_8_low"),
+            "week_8_high": info.get("week_8_high"),
             "summary_html": _markdown_to_html(summaries.get(symbol, "")),
             "summary": summaries.get(symbol, ""),
             "news_links": news_links,

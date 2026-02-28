@@ -135,6 +135,57 @@ EMAIL_TEMPLATE = """
         .news-links a:hover {
             text-decoration: underline;
         }
+        .prediction-box {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 4px;
+        }
+        .prediction-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #667eea;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .prediction-content {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #555;
+        }
+        .prediction-content strong {
+            color: #333;
+        }
+        .trend-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        .trend-bullish {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .trend-bearish {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .trend-neutral {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+        .disclaimer {
+            font-size: 11px;
+            color: #999;
+            font-style: italic;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
         .footer {
             background-color: #f5f5f5;
             padding: 20px;

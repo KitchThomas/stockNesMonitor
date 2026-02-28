@@ -9,7 +9,7 @@ from typing import Dict, List
 
 from config import config
 from modules.news_fetcher import fetch_news, get_stock_info
-from modules.ai_summarizer import summarize_stock_news
+from modules.ai_summarizer import summarize_stock_news, get_stock_prediction
 from modules.report_builder import build_html_report
 from modules.email_sender import send_email
 
@@ -99,7 +99,7 @@ def run_digest(is_test: bool = False, test_symbol: str = None) -> Dict:
     print()
 
     # 步骤 3: 生成 AI 摘要
-    print("🤖 步骤 3/5: 生成 AI 摘要...")
+    print("🤖 步骤 3/6: 生成 AI 摘要...")
     summaries = {}
 
     for symbol in symbols:
@@ -128,8 +128,40 @@ def run_digest(is_test: bool = False, test_symbol: str = None) -> Dict:
     print("✓ AI 摘要生成完成")
     print()
 
-    # 步骤 4: 构建 HTML 报告
-    print("📄 步骤 4/5: 构建 HTML 报告...")
+    # 步骤 4: 生成 AI 预测分析（可选）
+    predictions = {}
+    if config.ENABLE_PREDICTION:
+        print("🔮 步骤 4/6: 生成 AI 预测分析...")
+        for symbol in symbols:
+            news_list = news_data.get(symbol, [])
+            info = stock_info.get(symbol, {})
+            print(f"  正在分析 {symbol} 的走势...")
+
+            try:
+                prediction = get_stock_prediction(
+                    symbol=symbol,
+                    news_list=news_list,
+                    current_price=info.get("current_price"),
+                    change_percent=info.get("change_percent"),
+                    date=target_date,
+                    api_key=config.ANTHROPIC_API_KEY,
+                    base_url=config.ANTHROPIC_BASE_URL,
+                    language=config.REPORT_LANGUAGE
+                )
+                predictions[symbol] = prediction
+                print(f"    ✓ {symbol} 预测分析完成")
+            except Exception as e:
+                print(f"    ✗ {symbol} 预测分析失败: {e}")
+                predictions[symbol] = None
+
+        print("✓ AI 预测分析完成")
+        print()
+    else:
+        print("⏭️  步骤 4/6: AI 预测分析已禁用（ENABLE_PREDICTION=false）")
+        print()
+
+    # 步骤 5: 构建 HTML 报告
+    print("📄 步骤 5/6: 构建 HTML 报告...")
 
     try:
         html_report = build_html_report(

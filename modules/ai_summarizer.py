@@ -283,6 +283,131 @@ def _format_error(symbol: str, company_name: str, language: str, error_msg: str)
         return f"## {symbol} ({company_name})\n\n⚠️ Summary generation failed\n\nError: {error_msg}\n\nPlease try again later."
 
 
+def get_stock_prediction(
+    symbol: str,
+    news_list: List[Dict],
+    current_price: float = None,
+    change_percent: float = None,
+    date: str = None,
+    api_key: str = None,
+    base_url: str = None,
+    language: str = "zh",
+) -> str:
+    """
+    使用 AI 分析股票并给出短期走势预测
+
+    Args:
+        symbol: 股票代码
+        news_list: 新闻列表
+        current_price: 当前价格（可选）
+        change_percent: 涨跌幅（可选）
+        date: 目标日期
+        api_key: Anthropic API 密钥
+        base_url: API 基础 URL
+        language: 语言 (zh/en)
+
+    Returns:
+        预测分析文本
+    """
+    if not api_key:
+        return "⚠️ 缺少 API Key"
+
+    if not date:
+        date = datetime.now().strftime("%Y-%m-%d")
+
+    company_name = _get_company_name(symbol)
+
+    # 构建预测分析 prompt
+    news_text = _build_news_list_text(news_list[:10])  # 限制新闻数量
+
+    if language == "zh":
+        price_info = ""
+        if current_price:
+            price_info = f"\n当前价格: ${current_price:.2f}"
+        if change_percent is not None:
+            trend = "上涨" if change_percent >= 0 else "下跌"
+            price_info += f" | 今日{trend}: {abs(change_percent):.2f}%"
+
+        prompt = f"""你是一位专业的股票技术分析师。请分析以下股票的短期走势。
+
+股票：{symbol}（{company_name}）{price_info}
+日期：{date}
+
+近期新闻：
+{news_text}
+
+请提供一份简洁的短期走势分析，包含以下内容：
+
+**📊 走势预测**
+- 方向：看涨 📈 / 看跌 📉 / 中立 ➡️
+- 置信度：⭐⭐⭐ (高) / ⭐⭐ (中) / ⭐ (低)
+
+**🔍 关键因素**
+- 支撑此预测的 1-2 个核心因素
+
+**⚠️ 风险提示**
+- 可能改变走势的风险因素
+
+**免责声明**：此分析仅供参考，不构成任何投资建议。股市有风险，投资需谨慎。
+
+请保持简洁，总字数在 150 字以内。"""
+    else:
+        price_info = ""
+        if current_price:
+            price_info = f"\nCurrent Price: ${current_price:.2f}"
+        if change_percent is not None:
+            trend = "up" if change_percent >= 0 else "down"
+            price_info += f" | Today {trend}: {abs(change_percent):.2f}%"
+
+        prompt = f"""You are a professional stock technical analyst. Please analyze the short-term trend of the following stock.
+
+Stock: {symbol} ({company_name}){price_info}
+Date: {date}
+
+Recent News:
+{news_text}
+
+Please provide a concise short-term trend analysis including:
+
+**📊 Trend Prediction**
+- Direction: Bullish 📈 / Bearish 📉 / Neutral ➡️
+- Confidence: ⭐⭐⭐ (High) / ⭐⭐ (Medium) / ⭐ (Low)
+
+**🔍 Key Factors**
+- 1-2 core factors supporting this prediction
+
+**⚠️ Risk Warning**
+- Risk factors that could change the trend
+
+**Disclaimer**: This analysis is for reference only and does not constitute investment advice.
+
+Keep it concise, under 150 words."""
+
+    try:
+        client = Anthropic(api_key=api_key, base_url=base_url)
+
+        # 优先使用稳定模型
+        models_to_try = ["claude-3-5-sonnet-20241022", "claude-sonnet-4-20250514"]
+
+        for model in models_to_try:
+            try:
+                message = client.messages.create(
+                    model=model,
+                    max_tokens=800,
+                    temperature=0.3,
+                    messages=[{"role": "user", "content": prompt}],
+                    timeout=30.0
+                )
+                return message.content[0].text
+            except APIError:
+                continue
+
+        return "预测分析生成失败，请稍后重试。"
+
+    except Exception as e:
+        return f"预测分析失败: {str(e)[:50]}"
+
+
 if __name__ == "__main__":
     # 测试代码
     import os

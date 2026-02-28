@@ -32,13 +32,53 @@ def _get_company_name(symbol: str) -> str:
     return symbol
 
 
-def _build_prompt(symbol: str, company_name: str, news_list: List[Dict], date: str, language: str = "zh") -> str:
+def _build_prompt(symbol: str, company_name: str, news_list: List[Dict], date: str, language: str = "zh", include_prediction: bool = False) -> str:
     """构建 Claude API 的提示词"""
 
     news_text = _build_news_list_text(news_list)
 
-    if language == "zh":
-        prompt = f"""你是一位专业的股票分析师助手。以下是 {symbol}（{company_name}）在 {date} 的新闻列表：
+    if include_prediction:
+        # 包含预测分析的完整版 prompt
+        if language == "zh":
+            prompt = f"""你是一位专业的股票分析师助手。以下是 {symbol}（{company_name}）在 {date} 的新闻列表：
+
+{news_text}
+
+请用中文生成一份简洁的每日分析报告，包含以下部分：
+1. **重要事件**（2-4条，每条一句话）
+2. **市场情绪**（正面/中性/负面，并简要说明原因）
+3. **需要关注**（1-2个风险点或机会点）
+4. **短期走势预测**
+   - 预测方向：看涨/看跌/中性
+   - 置信度：高/中/低
+   - 关键因素：用1-2句话说明支撑此预测的核心因素
+
+要求：
+- 基于新闻进行客观分析，不做买卖建议
+- 预测仅为技术分析参考，不构成投资建议
+- 总字数控制在 300 字以内"""
+        else:
+            prompt = f"""You are a professional stock analyst assistant. Below is the news list for {symbol} ({company_name}) on {date}:
+
+{news_text}
+
+Please generate a concise daily analysis report in English, including:
+1. **Key Events** (2-4 items, one sentence each)
+2. **Market Sentiment** (Positive/Neutral/Negative, with brief reason)
+3. **Watch List** (1-2 risk points or opportunities)
+4. **Short-term Trend Prediction**
+   - Direction: Bullish/Bearish/Neutral
+   - Confidence: High/Medium/Low
+   - Key Factors: 1-2 sentences supporting the prediction
+
+Requirements:
+- Objective analysis based on news, no buy/sell recommendations
+- Prediction is for technical reference only, not investment advice
+- Keep under 300 words"""
+    else:
+        # 简化版 prompt（原有逻辑）
+        if language == "zh":
+            prompt = f"""你是一位专业的股票分析师助手。以下是 {symbol}（{company_name}）在 {date} 的新闻列表：
 
 {news_text}
 
@@ -51,8 +91,8 @@ def _build_prompt(symbol: str, company_name: str, news_list: List[Dict], date: s
 - 简洁客观，不做投资建议
 - 如果新闻较少或不重要，直接说明"今日无重大事件"
 - 总字数控制在 200 字以内"""
-    else:
-        prompt = f"""You are a professional stock analyst assistant. Below is the news list for {symbol} ({company_name}) on {date}:
+        else:
+            prompt = f"""You are a professional stock analyst assistant. Below is the news list for {symbol} ({company_name}) on {date}:
 
 {news_text}
 

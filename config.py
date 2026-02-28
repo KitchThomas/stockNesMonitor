@@ -40,6 +40,9 @@ class Config:
     # 新闻抓取天数
     NEWS_LOOKBACK_DAYS = int(os.getenv("NEWS_LOOKBACK_DAYS", "1"))
 
+    # 是否启用 AI 预测分析
+    ENABLE_PREDICTION = os.getenv("ENABLE_PREDICTION", "true").lower() == "true"
+
     @classmethod
     def validate(cls):
         """验证必要的配置项是否存在"""

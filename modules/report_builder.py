@@ -75,11 +75,15 @@ EMAIL_TEMPLATE = """
             font-weight: 600;
             color: #333;
         }
+        .stock-price-info {
+            text-align: right;
+        }
         .stock-change {
             font-size: 14px;
             font-weight: 500;
             padding: 4px 8px;
             border-radius: 4px;
+            display: inline-block;
         }
         .stock-change.positive {
             background-color: #e8f5e9;
@@ -92,6 +96,23 @@ EMAIL_TEMPLATE = """
         .stock-change.neutral {
             background-color: #f5f5f5;
             color: #616161;
+        }
+        .stock-current-price {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        .stock-range-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .range-high {
+            color: #2e7d32;
+        }
+        .range-low {
+            color: #c62828;
         }
         .summary-content {
             font-size: 14px;

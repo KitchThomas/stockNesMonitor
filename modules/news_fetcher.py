@@ -112,15 +112,18 @@ def fetch_from_yfinance(symbol: str, max_news: int = 20) -> List[Dict]:
 
 def get_stock_info(symbol: str) -> Dict:
     """
-    获取股票基本信息（公司名称、昨日涨跌幅等）
+    获取股票基本信息（公司名称、当前价格、涨跌幅、8周高低价等）
 
     Args:
         symbol: 股票代码
 
     Returns:
-        包含 company_name, change, change_percent 的字典
+        包含 company_name, current_price, change, change_percent, week_8_low, week_8_high 的字典
     """
     try:
+        import pandas as pd
+        from datetime import datetime, timedelta
+
         ticker = yf.Ticker(symbol)
         info = ticker.info
 
@@ -134,19 +137,44 @@ def get_stock_info(symbol: str) -> Dict:
         else:
             change = 0
             change_percent = 0
+            current_price = 0
+
+        # 获取8周（约56个交易日）的历史数据来计算高低价
+        week_8_low = None
+        week_8_high = None
+        try:
+            # 获取过去3个月的历史数据以确保覆盖8周
+            end_date = datetime.now()
+            start_date = end_date - timedelta(days=90)
+
+            hist = ticker.history(start=start_date.strftime("%Y-%m-%d"), end=end_date.strftime("%Y-%m-%d"))
+
+            if not hist.empty:
+                # 取最近约56个交易日（8周）
+                recent_hist = hist.tail(56)
+                week_8_low = round(float(recent_hist['Low'].min()), 2)
+                week_8_high = round(float(recent_hist['High'].max()), 2)
+        except Exception as e:
+            print(f"  获取历史数据失败 ({symbol}): {e}")
 
         return {
             "company_name": company_name,
+            "current_price": round(current_price, 2) if current_price else None,
             "change": round(change, 2),
             "change_percent": round(change_percent, 2),
+            "week_8_low": week_8_low,
+            "week_8_high": week_8_high,
         }
 
     except Exception as e:
         print(f"获取股票信息失败 ({symbol}): {e}")
         return {
             "company_name": symbol,
+            "current_price": None,
             "change": 0,
             "change_percent": 0,
+            "week_8_low": None,
+            "week_8_high": None,
         }
 
 

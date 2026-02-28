@@ -117,7 +117,8 @@ def summarize_stock_news(
     base_url: str = None,
     language: str = "zh",
     max_retries: int = 3,
-    retry_delay: float = 3.0,  # 增加默认延迟到 3 秒
+    retry_delay: float = 3.0,
+    include_prediction: bool = False,  # 新增：是否包含预测分析
 ) -> str:
     """
     使用 Claude API 生成股票新闻摘要
@@ -131,6 +132,7 @@ def summarize_stock_news(
         language: 摘要语言 (zh/en)
         max_retries: 最大重试次数
         retry_delay: 重试延迟（秒），默认 3 秒
+        include_prediction: 是否包含 AI 预测分析
 
     Returns:
         Markdown 格式的摘要字符串
@@ -153,7 +155,7 @@ def summarize_stock_news(
             return f"## {symbol} ({company_name})\n\nNo major news events today."
 
     # 构建 Prompt
-    prompt = _build_prompt(symbol, company_name, news_list, date, language)
+    prompt = _build_prompt(symbol, company_name, news_list, date, language, include_prediction)
 
     # 重试机制
     last_error = None

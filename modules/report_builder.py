@@ -341,6 +341,49 @@ def _get_change_class(change_percent: float) -> str:
     return "neutral"
 
 
+def _extract_trend_badge(prediction_text: str) -> str:
+    """从预测文本中提取走势标签"""
+    if not prediction_text:
+        return None
+
+    text_lower = prediction_text.lower()
+
+    # 中文关键词
+    if "看涨" in prediction_text or "📈" in prediction_text:
+        return "看涨 📈"
+    elif "看跌" in prediction_text or "📉" in prediction_text:
+        return "看跌 📉"
+    elif "中立" in prediction_text or "➡️" in prediction_text:
+        return "中立 ➡️"
+
+    # 英文关键词
+    if "bullish" in text_lower:
+        return "Bullish 📈"
+    elif "bearish" in text_lower:
+        return "Bearish 📉"
+    elif "neutral" in text_lower:
+        return "Neutral ➡️"
+
+    return None
+
+
+def _extract_trend_class(prediction_text: str) -> str:
+    """从预测文本中提取走势 CSS 类名"""
+    if not prediction_text:
+        return None
+
+    text_lower = prediction_text.lower()
+
+    if "看涨" in prediction_text or "bullish" in text_lower or "📈" in prediction_text:
+        return "trend-bullish"
+    elif "看跌" in prediction_text or "bearish" in text_lower or "📉" in prediction_text:
+        return "trend-bearish"
+    elif "中立" in prediction_text or "neutral" in text_lower or "➡️" in prediction_text:
+        return "trend-neutral"
+
+    return None
+
+
 def build_html_report(
     summaries: Dict[str, str],
     stock_info: Dict[str, Dict],

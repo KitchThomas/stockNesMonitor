@@ -397,6 +397,10 @@ def build_html_report(
             "summary": summaries.get(symbol, ""),
             "news_links": news_links,
             "news_count": len(news_list),
+            "prediction": predictions.get(symbol) if predictions else None,
+            "prediction_html": _markdown_to_html(predictions.get(symbol)) if predictions and predictions.get(symbol) else None,
+            "trend_badge": _extract_trend_badge(predictions.get(symbol)) if predictions and predictions.get(symbol) else None,
+            "trend_class": _extract_trend_class(predictions.get(symbol)) if predictions and predictions.get(symbol) else None,
         })
 
     # 准备股票符号列表

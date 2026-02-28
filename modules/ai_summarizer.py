@@ -2,10 +2,12 @@
 AI 摘要模块
 使用 Claude API 生成股票新闻的中文摘要
 """
+import time
 from datetime import datetime
 from typing import Dict, List
 
 from anthropic import Anthropic
+from anthropic import APIError, APITimeoutError, RateLimitError
 
 
 def _build_news_list_text(news_list: List[Dict], max_items: int = 15) -> str:
@@ -74,6 +76,8 @@ def summarize_stock_news(
     api_key: str = None,
     base_url: str = None,
     language: str = "zh",
+    max_retries: int = 3,
+    retry_delay: float = 2.0,
 ) -> str:
     """
     使用 Claude API 生成股票新闻摘要
@@ -85,12 +89,16 @@ def summarize_stock_news(
         api_key: Anthropic API 密钥
         base_url: API 基础 URL
         language: 摘要语言 (zh/en)
+        max_retries: 最大重试次数
+        retry_delay: 重试延迟（秒）
 
     Returns:
         Markdown 格式的摘要字符串
     """
     if not api_key:
-        raise ValueError("缺少 Anthropic API Key")
+        error_msg = "缺少 Anthropic API Key"
+        print(f"  ✗ {symbol}: {error_msg}")
+        return _format_error(symbol, symbol, language, error_msg)
 
     if not date:
         date = datetime.now().strftime("%Y-%m-%d")
@@ -107,38 +115,98 @@ def summarize_stock_news(
     # 构建 Prompt
     prompt = _build_prompt(symbol, company_name, news_list, date, language)
 
-    try:
-        # 调用 Claude API
-        client = Anthropic(api_key=api_key, base_url=base_url)
+    # 重试机制
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            # 调用 Claude API
+            client = Anthropic(api_key=api_key, base_url=base_url)
 
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1000,
-            temperature=0.3,
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }]
-        )
+            # 尝试多个可能的模型名称
+            models_to_try = [
+                "claude-sonnet-4-20250514",  # 尝试新版本
+                "claude-sonnet-4-20250513",  # 备选版本
+                "claude-3-5-sonnet-20241022",  # 稳定版本
+                "claude-3-5-sonnet-20240620",  # 较旧稳定版本
+            ]
 
-        # 提取回复内容
-        summary = message.content[0].text
+            message = None
+            model_error = None
 
-        # 添加标题
-        if language == "zh":
-            title = f"## {symbol}（{company_name}）"
-        else:
-            title = f"## {symbol} ({company_name})"
+            for model in models_to_try:
+                try:
+                    message = client.messages.create(
+                        model=model,
+                        max_tokens=1000,
+                        temperature=0.3,
+                        messages=[{
+                            "role": "user",
+                            "content": prompt
+                        }],
+                        timeout=30.0
+                    )
+                    print(f"    ✓ {symbol} 使用模型 {model} 成功")
+                    break
+                except APIError as e:
+                    model_error = e
+                    print(f"    ⚠ {symbol} 模型 {model} 失败: {str(e)[:50]}...")
+                    continue
 
-        return f"{title}\n\n{summary}"
+            if message is None:
+                raise model_error or Exception("所有模型尝试失败")
 
-    except Exception as e:
-        error_msg = f"AI 摘要生成失败: {e}"
-        print(error_msg)
-        if language == "zh":
-            return f"## {symbol}（{company_name}）\n\n摘要生成失败，请稍后重试。"
-        else:
-            return f"## {symbol} ({company_name})\n\nSummary generation failed, please try again later."
+            # 提取回复内容
+            summary = message.content[0].text
+
+            # 添加标题
+            if language == "zh":
+                title = f"## {symbol}（{company_name}）"
+            else:
+                title = f"## {symbol} ({company_name})"
+
+            # API 调用之间添加延迟，避免速率限制
+            time.sleep(retry_delay)
+
+            return f"{title}\n\n{summary}"
+
+        except RateLimitError as e:
+            last_error = e
+            print(f"  ⚠ {symbol} 速率限制，等待 {retry_delay * (attempt + 1)} 秒后重试...")
+            time.sleep(retry_delay * (attempt + 1))
+            continue
+
+        except APITimeoutError as e:
+            last_error = e
+            print(f"  ⚠ {symbol} 请求超时，重试 {attempt + 1}/{max_retries}...")
+            time.sleep(retry_delay)
+            continue
+
+        except APIError as e:
+            last_error = e
+            print(f"  ✗ {symbol} API 错误: {str(e)[:100]}")
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay)
+            continue
+
+        except Exception as e:
+            last_error = e
+            print(f"  ✗ {symbol} 未知错误: {str(e)[:100]}")
+            import traceback
+            traceback.print_exc()
+            break
+
+    # 所有重试都失败
+    error_msg = f"API 调用失败: {type(last_error).__name__}: {str(last_error)[:100] if last_error else 'Unknown error'}"
+    print(f"  ✗ {symbol} {error_msg}")
+    return _format_error(symbol, company_name, language, error_msg)
+
+
+def _format_error(symbol: str, company_name: str, language: str, error_msg: str) -> str:
+    """格式化错误消息"""
+    if language == "zh":
+        return f"## {symbol}（{company_name}）\n\n⚠️ 摘要生成失败\n\n错误信息：{error_msg}\n\n请稍后重试。"
+    else:
+        return f"## {symbol} ({company_name})\n\n⚠️ Summary generation failed\n\nError: {error_msg}\n\nPlease try again later."
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, List
 
 from anthropic import Anthropic
-from anthropic import APIError, APITimeoutError, RateLimitError
+from anthropic import APIError, APITimeoutError, RateLimitError, AuthenticationError
 
 
 def _build_news_list_text(news_list: List[Dict], max_items: int = 15) -> str:
@@ -169,10 +169,20 @@ def summarize_stock_news(
 
             return f"{title}\n\n{summary}"
 
+        except AuthenticationError as e:
+            # 401 错误 - 不再重试，直接失败
+            error_detail = str(e)
+            print(f"  ✗ {symbol} 认证失败 (401)")
+            print(f"     可能原因：API Key 无效、已过期或配额用完")
+            print(f"     详细信息：{error_detail[:100]}")
+            # 401 错误不重试，直接返回
+            return _format_error(symbol, company_name, language, f"认证失败: {error_detail[:80]}")
+
         except RateLimitError as e:
             last_error = e
-            print(f"  ⚠ {symbol} 速率限制，等待 {retry_delay * (attempt + 1)} 秒后重试...")
-            time.sleep(retry_delay * (attempt + 1))
+            wait_time = retry_delay * (2 ** attempt)  # 指数退避: 2s, 4s, 8s
+            print(f"  ⚠ {symbol} 速率限制，等待 {wait_time} 秒后重试...")
+            time.sleep(wait_time)
             continue
 
         except APITimeoutError as e:
@@ -183,14 +193,24 @@ def summarize_stock_news(
 
         except APIError as e:
             last_error = e
-            print(f"  ✗ {symbol} API 错误: {str(e)[:100]}")
+            error_str = str(e)
+            # 检查是否是 401 相关错误
+            if "401" in error_str or "Unauthorized" in error_str or "authentication" in error_str.lower():
+                print(f"  ✗ {symbol} 认证失败: {error_str[:100]}")
+                return _format_error(symbol, company_name, language, f"认证失败: {error_str[:80]}")
+            print(f"  ✗ {symbol} API 错误: {error_str[:100]}")
             if attempt < max_retries - 1:
                 time.sleep(retry_delay)
             continue
 
         except Exception as e:
             last_error = e
-            print(f"  ✗ {symbol} 未知错误: {str(e)[:100]}")
+            error_str = str(e)
+            # 检查是否是 401 相关错误
+            if "401" in error_str:
+                print(f"  ✗ {symbol} 认证失败: {error_str[:100]}")
+                return _format_error(symbol, company_name, language, f"认证失败: {error_str[:80]}")
+            print(f"  ✗ {symbol} 未知错误: {error_str[:100]}")
             import traceback
             traceback.print_exc()
             break

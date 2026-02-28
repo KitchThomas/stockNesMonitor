@@ -77,7 +77,7 @@ def summarize_stock_news(
     base_url: str = None,
     language: str = "zh",
     max_retries: int = 3,
-    retry_delay: float = 2.0,
+    retry_delay: float = 3.0,  # 增加默认延迟到 3 秒
 ) -> str:
     """
     使用 Claude API 生成股票新闻摘要
@@ -90,7 +90,7 @@ def summarize_stock_news(
         base_url: API 基础 URL
         language: 摘要语言 (zh/en)
         max_retries: 最大重试次数
-        retry_delay: 重试延迟（秒）
+        retry_delay: 重试延迟（秒），默认 3 秒
 
     Returns:
         Markdown 格式的摘要字符串
@@ -122,13 +122,21 @@ def summarize_stock_news(
             # 调用 Claude API
             client = Anthropic(api_key=api_key, base_url=base_url)
 
-            # 尝试多个可能的模型名称
-            models_to_try = [
-                "claude-sonnet-4-20250514",  # 尝试新版本
-                "claude-sonnet-4-20250513",  # 备选版本
-                "claude-3-5-sonnet-20241022",  # 稳定版本
-                "claude-3-5-sonnet-20240620",  # 较旧稳定版本
-            ]
+            # 根据是否使用代理 API 选择模型
+            # 代理 API 通常支持更简单的模型名称
+            if base_url and "anthropic.com" not in base_url:
+                # 使用代理 API，尝试稳定的模型版本
+                models_to_try = [
+                    "claude-sonnet-4-20250514",
+                    "claude-3-5-sonnet-20241022",
+                ]
+            else:
+                # 官方 API，可以尝试更多版本
+                models_to_try = [
+                    "claude-sonnet-4-20250514",
+                    "claude-sonnet-4-20250513",
+                    "claude-3-5-sonnet-20241022",
+                ]
 
             message = None
             model_error = None
@@ -149,7 +157,11 @@ def summarize_stock_news(
                     break
                 except APIError as e:
                     model_error = e
-                    print(f"    ⚠ {symbol} 模型 {model} 失败: {str(e)[:50]}...")
+                    # 如果是认证错误，不尝试其他模型
+                    if "401" in str(e) or "Unauthorized" in str(e):
+                        print(f"    ✗ {symbol} 模型 {model} 认证失败")
+                        raise AuthenticationError(str(e))
+                    print(f"    ⚠ {symbol} 模型 {model} 不可用，尝试下一个...")
                     continue
 
             if message is None:
